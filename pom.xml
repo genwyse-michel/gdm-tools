@@ -1,0 +1,78 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.genwyse.aphp</groupId>
+  <artifactId>gdm-tools</artifactId>
+  <version>1.0.0</version>
+  <name>gdm-tools</name>
+  <description>Bibliothèque pour moteurs et applications GDM Serveur</description>
+
+	<properties>
+	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+  
+  <repositories>
+    <repository>
+        <id>local-maven-repo</id>
+        <url>file:///${project.basedir}/local-maven-repo</url>
+    </repository>
+  </repositories>
+  
+  <build>
+    <plugins>
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-compiler-plugin</artifactId>
+			    <version>3.8.0</version>
+			    <configuration>
+			        <source>1.8</source>
+			        <target>1.8</target>
+			    </configuration>
+			</plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>install</phase>
+            <configuration>
+              <tasks>
+                <echo>Projet ${project.name}</echo>
+                <copy file="target/${project.name}-${project.version}.jar" tofile="${basedir}/dist/${project.name}-${project.version}.jar"/>-->
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    
+    </plugins>
+  </build>
+  
+  <dependencies>
+    <dependency>
+      <groupId>com.genwyse</groupId>
+      <artifactId>genwyse-generic-tools</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.17</version>
+    </dependency>
+    <!-- -->
+    <dependency>
+		  <groupId>com.oracle.database.jdbc</groupId>
+		  <artifactId>ojdbc10</artifactId>
+		  <version>19.6.0.0</version>
+    </dependency>
+    <!-- -->
+    <!-- -
+		<dependency>
+		    <groupId>com.oracle</groupId>
+		    <artifactId>ojdbc14</artifactId>
+		    <version>10.2.0.1.0</version>
+		</dependency>
+    <!- -->
+  </dependencies>
+</project>
