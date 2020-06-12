@@ -49,16 +49,16 @@ public abstract class GDMTool extends Tool {
         String dbUser = getProperty(propOracleUser);
         String dbPwd = getProperty(propOraclePwd);
 
-        logger.info("Connexion Oracle: " + dbServer + ", " + dbUser);
+        logger.info(logPrefix+"Connexion Oracle: " + dbServer + ", " + dbUser);
         conn = DriverManager.getConnection("jdbc:oracle:thin:@" + dbServer,dbUser,dbPwd);
-        logger.debug("Connexion Oracle OK");
+        logger.debug(logPrefix+"Connexion Oracle OK");
       } catch (ClassNotFoundException e) {
         String mess = "Erreur interne: classe non trouvee: "+e.getMessage();
-        logger.fatal(mess);
+        logger.fatal(logPrefix+mess);
         throw new GDMDBException(mess, e);
       } catch (SQLException e) {
         String mess = "Impossible de se connecter a la base de donnees: "+e.getMessage();
-        logger.error(mess);
+        logger.error(logPrefix+mess);
         throw new GDMDBException(mess, e);
       }
       
@@ -73,7 +73,7 @@ public abstract class GDMTool extends Tool {
       }
     } catch (SQLException e) {
       String mess = "Erreur lors de la deconnexion de la base de donnees: "+e.getMessage();
-      logger.error(mess);
+      logger.error(logPrefix+mess);
     }
   }
   @Override
