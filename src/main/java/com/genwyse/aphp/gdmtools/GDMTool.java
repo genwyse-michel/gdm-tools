@@ -3,7 +3,10 @@ package com.genwyse.aphp.gdmtools;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 
@@ -76,6 +79,22 @@ public abstract class GDMTool extends Tool {
       logger.error(logPrefix+mess);
     }
   }
+  
+  /*
+   * Donne la date système selon le serveur de base de données
+   */
+  public Date getDBTime() throws GDMToolException {
+    try {
+      Statement stmt = getConnection().createStatement();
+      ResultSet rs = stmt.executeQuery("SELECT sysdate as now FROM DUAL");
+      java.sql.Date sqlDate = rs.getDate("now");
+      return new Date(sqlDate.getTime());
+    } catch (SQLException e) {
+      logger.error("Erreur en interrgeant la date Oracle: "+e.getMessage());
+      throw new GDMToolException(e);
+    }
+  }
+  
   @Override
   public boolean initialize(String[] args) throws ToolException, IOException {
     if (!super.initialize(args)) {
