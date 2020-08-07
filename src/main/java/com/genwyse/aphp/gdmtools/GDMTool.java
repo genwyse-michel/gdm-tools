@@ -22,6 +22,9 @@ public abstract class GDMTool extends Tool {
   protected static final String propOracleDb = "oracle.db";
   protected static final String propOracleUser = "oracle.user";
   protected static final String propOraclePwd = "oracle.pwd";
+  protected static final String propDebugSql = "debug-sql";
+  protected static final String propTempo = "duree-attente";
+  protected static final String propOneShot = "execution-unique";
   
   protected static Parameters classParameters = new Parameters (
     Tool.classParameters,
@@ -29,14 +32,31 @@ public abstract class GDMTool extends Tool {
       new Parameter (propOracleDb, true, "", "Base Oracle GDM Patients, sous la forme: serveur:port:SID (ex.: eclat:1521:GDMPAT)", true),
       new Parameter (propOracleUser, true, "", "Utilisateur Oracle GDM Patients", true),
       new Parameter (propOraclePwd, true, "", "Mot de passe Oracle GDM Patients", true),
+      new Parameter (propDebugSql, false, "", "Active la trace des requêtes SQL", true),
+      new Parameter (propTempo, false, "60", "Durée d'attente entre les exécutions", true),
+      new Parameter (propOneShot, false, "false", "Ne faire qu'une exécution du traitement", true),
   });
   
   // Données internes
   private Connection conn = null;
+  private boolean debugSql = false;
+  private int dureeAttente = 60;
+  private boolean oneShot = false;
 
-  
+  public void setStatus(GDMToolStatus status) {
+    this.status = status.getValue();
+  }
+    
   public Connection getConnection() {
     return conn;
+  }
+
+  public boolean isDebugSql() {
+    return debugSql;
+  }
+
+  public void setDebugSql(boolean debugSql) {
+    this.debugSql = debugSql;
   }
 
   public GDMTool() {
@@ -54,6 +74,7 @@ public abstract class GDMTool extends Tool {
 
         logger.info(logPrefix+"Connexion Oracle: " + dbServer + ", " + dbUser);
         conn = DriverManager.getConnection("jdbc:oracle:thin:@" + dbServer,dbUser,dbPwd);
+        conn.setAutoCommit(false);
         logger.debug(logPrefix+"Connexion Oracle OK");
       } catch (ClassNotFoundException e) {
         String mess = "Erreur interne: classe non trouvee: "+e.getMessage();
@@ -96,14 +117,87 @@ public abstract class GDMTool extends Tool {
   }
   
   @Override
+  public boolean getBooleanProperty(String prop) throws NumberFormatException {
+    String prop_text = getProperty(prop);
+    if (prop_text==null || "".equals(prop_text)) {
+      return false;
+    }
+    else {
+      prop_text = prop_text.toLowerCase();
+      if ("1".equals(prop_text) || "true".equals(prop_text)) {
+        return true;
+      }
+      else if ("0".equals(prop_text) || "false".equals(prop_text)) {
+        return false;
+      }
+      else {
+        // Paramètre au format incorrect
+        logger.error("Option "+prop+ " incorrecte: mettre true ou false ou 0 ou 1");
+        throw new NumberFormatException();
+      }
+    }
+  }
+  
+  @Override
   public boolean initialize(String[] args) throws ToolException, IOException {
     if (!super.initialize(args)) {
       return false;
     }
     
     // Autres initialisations selon configuration
+    boolean initOk = true;
     
-    return true;
+    try {
+      debugSql = getBooleanProperty(propDebugSql);
+    } catch (NumberFormatException e) {
+      initOk = false;
+    }
+    
+    try {
+      oneShot = getBooleanProperty(propOneShot);
+    } catch (NumberFormatException e) {
+      initOk = false;
+    }
+    
+    try {
+      dureeAttente = Integer.parseInt(getProperty(propTempo)) * 1000;
+    } catch (NumberFormatException e) {
+      // Paramètre au format incorrect
+      logger.error("Option "+propTempo+ " incorrecte, il faut un temps en secondes");
+      initOk = false;
+    }
+        
+    return initOk;
+  }
+  
+  // Cycle de traitement (pour les moteurs restant actifs)
+  public void cycleTraitement () throws ToolException {
+    
+  }
+  
+  // Exécution de type boucle infinie
+  public void executeBoucle() throws ToolException {
+    
+    boolean firstExecution = true;
+    
+    while (firstExecution || !oneShot) {
+      firstExecution = false;
+      
+      // Connexion à Oracle
+      connectDB(true);
+
+      // Ewécution d'un cycle moteur
+      cycleTraitement();
+      
+      // Fin du cycle
+      disconnectDB();
+      if (!oneShot) try {
+        logger.info("Attente "+(dureeAttente/1000)+" s");
+        Thread.sleep(dureeAttente);
+      } catch (InterruptedException e) {
+        break; // Sortie sur interruption
+      }
+    }
   }
   
   public static void main(String[] args) {
