@@ -81,7 +81,7 @@ public abstract class GDMTool extends Tool {
         logger.fatal(logPrefix+mess);
         throw new GDMDBException(mess, e);
       } catch (SQLException e) {
-        String mess = "Impossible de se connecter a la base de donnees: "+e.getMessage();
+        String mess = "Impossible de se connecter a la base de donnees: "+e.getMessage().replaceAll("\\n\\r?", "");
         logger.error(logPrefix+mess);
         throw new GDMDBException(mess, e);
       }
@@ -176,21 +176,30 @@ public abstract class GDMTool extends Tool {
   }
   
   // Exécution de type boucle infinie
-  public void executeBoucle() throws ToolException {
+  public void executeBoucle(boolean catchExceptions) throws ToolException {
     
     boolean firstExecution = true;
     
     while (firstExecution || !oneShot) {
       firstExecution = false;
       
-      // Connexion à Oracle
-      connectDB(true);
-
-      // Ewécution d'un cycle moteur
-      cycleTraitement();
-      
-      // Fin du cycle
-      disconnectDB();
+      try {
+        // Connexion à Oracle
+        connectDB(true);
+  
+        // Ewécution d'un cycle moteur
+        cycleTraitement();
+        
+        // Fin du cycle
+        disconnectDB();
+      } catch (Exception e) {
+        if (catchExceptions) {
+          logger.error("Erreur: "+e.getMessage());
+        }
+        else {
+          throw e;
+        }
+      }
       if (!oneShot) try {
         logger.info("Attente "+(dureeAttente/1000)+" s");
         Thread.sleep(dureeAttente);
