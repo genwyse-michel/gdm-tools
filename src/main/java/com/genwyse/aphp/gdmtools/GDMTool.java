@@ -1,6 +1,7 @@
 package com.genwyse.aphp.gdmtools;
 
 import java.io.IOException;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -32,9 +33,9 @@ public abstract class GDMTool extends Tool {
       new Parameter (propOracleDb, true, "", "Base Oracle GDM Patients, sous la forme: serveur:port:SID (ex.: eclat:1521:GDMPAT)", true),
       new Parameter (propOracleUser, true, "", "Utilisateur Oracle GDM Patients", true),
       new Parameter (propOraclePwd, true, "", "Mot de passe Oracle GDM Patients", true),
-      new Parameter (propDebugSql, false, "", "Active la trace des requêtes SQL", true),
+      new Parameter (propDebugSql, false, "", "Active la trace des requêtes SQL", false, 0, null, null),
       new Parameter (propTempo, false, "60", "Durée d'attente entre les exécutions", true),
-      new Parameter (propOneShot, false, "false", "Ne faire qu'une exécution du traitement", true),
+      new Parameter (propOneShot, false, "false", "Ne faire qu'une exécution du traitement", true, 0, null, null),
   });
   
   // Données internes
@@ -114,6 +115,17 @@ public abstract class GDMTool extends Tool {
       logger.error("Erreur en interrgeant la date Oracle: "+e.getMessage());
       throw new GDMToolException(e);
     }
+  }
+  
+  public void traceQuery(String query) {
+    if (isDebugSql()) {
+      logger.info(query);
+    }
+  }
+  
+  public CallableStatement prepareCall(String query) throws SQLException
+  {
+    return getConnection().prepareCall(query);
   }
   
   @Override
