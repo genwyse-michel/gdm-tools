@@ -52,6 +52,14 @@ public abstract class GDMTool extends Tool {
     return conn;
   }
 
+  public boolean getOneShot() {
+    return oneShot;
+  }
+  
+  public int getDureeAttente() {
+    return dureeAttente;
+  }
+  
   public boolean isDebugSql() {
     return debugSql;
   }
@@ -180,6 +188,19 @@ public abstract class GDMTool extends Tool {
     }
         
     return initOk;
+  }
+  
+  public boolean readGdmConfig (String configPath, boolean allInstances) {
+    String oldConfigPath = configPath;
+    try {
+      readConfig(configPath, allInstances);
+    } catch (IOException e) {
+      logger.error("Erreur dans la lecture de la configuration "+configPath+": "+e.getMessage());
+      return false;
+    } finally {
+      configPath = oldConfigPath;
+    }
+    return true;
   }
   
   // Cycle de traitement (pour les moteurs restant actifs)
