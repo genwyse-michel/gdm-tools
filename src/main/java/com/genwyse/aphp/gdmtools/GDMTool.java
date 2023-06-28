@@ -26,6 +26,7 @@ public abstract class GDMTool extends Tool {
   protected static final String propDebugSql = "debug-sql";
   protected static final String propTempo = "duree-attente";
   protected static final String propOneShot = "execution-unique";
+  protected static final String propShowExecutionNumber = "affiche-numero-boucle";
   
   protected static Parameters classParameters = new Parameters (
     Tool.classParameters,
@@ -36,6 +37,7 @@ public abstract class GDMTool extends Tool {
       new Parameter (propDebugSql, false, "", "Active la trace des requêtes SQL", false, 0, null, null),
       new Parameter (propTempo, false, "60", "Durée d'attente entre les exécutions", true),
       new Parameter (propOneShot, false, "false", "Ne faire qu'une exécution du traitement", true, 0, null, null),
+      new Parameter (propShowExecutionNumber, false, "false", "Afficher le nombre d'exécutions", true, 0, null, null),
   });
   
   // Données internes
@@ -43,6 +45,7 @@ public abstract class GDMTool extends Tool {
   private boolean debugSql = false;
   private int dureeAttente = 60;
   private boolean oneShot = false;
+  private boolean showExecutionNumber = false;
 
   public void setStatus(GDMToolStatus status) {
     this.status = status.getValue();
@@ -180,6 +183,12 @@ public abstract class GDMTool extends Tool {
     }
     
     try {
+      showExecutionNumber = getBooleanProperty(propShowExecutionNumber);
+    } catch (NumberFormatException e) {
+      initOk = false;
+    }
+    
+    try {
       dureeAttente = Integer.parseInt(getProperty(propTempo)) * 1000;
     } catch (NumberFormatException e) {
       // Paramètre au format incorrect
@@ -211,11 +220,13 @@ public abstract class GDMTool extends Tool {
   // Exécution de type boucle infinie
   public void executeBoucle(boolean catchExceptions) throws ToolException {
     
-    boolean firstExecution = true;
+    int numExecution = 0;
     
-    while (firstExecution || !oneShot) {
-      firstExecution = false;
-      
+    while (numExecution==0 || !oneShot) {
+      numExecution++;
+      if (showExecutionNumber) {
+        logger.info("Execution numero "+numExecution);
+      }
       try {
         // Connexion à Oracle
         connectDB(true);
@@ -234,6 +245,9 @@ public abstract class GDMTool extends Tool {
         }
       }
       if (!oneShot) try {
+        // Sort les poubelles avant d'aller dormir
+        System.gc();
+        
         logger.info("Attente "+(dureeAttente/1000)+" s");
         Thread.sleep(dureeAttente);
       } catch (InterruptedException e) {

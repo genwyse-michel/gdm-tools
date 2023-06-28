@@ -53,7 +53,7 @@
     <dependency>
       <groupId>com.genwyse</groupId>
       <artifactId>genwyse-generic-tools</artifactId>
-      <version>1.0.2</version>
+      <version>[1.0.2,1.1)</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
