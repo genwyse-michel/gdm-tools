@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.genwyse.aphp</groupId>
   <artifactId>gdm-tools</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <name>gdm-tools</name>
   <description>Bibliothèque pour moteurs et applications GDM Serveur</description>
 
@@ -53,7 +53,7 @@
     <dependency>
       <groupId>com.genwyse</groupId>
       <artifactId>genwyse-generic-tools</artifactId>
-      <version>[1.0.2,1.1)</version>
+      <version>[1.0.5,1.1)</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
