@@ -34,10 +34,10 @@
           <execution>
             <phase>install</phase>
             <configuration>
-              <tasks>
+              <target>
                 <echo>Projet ${project.name}</echo>
                 <copy file="target/${project.name}-${project.version}.jar" tofile="${basedir}/dist/${project.name}-${project.version}.jar"/>-->
-              </tasks>
+              </target>
             </configuration>
             <goals>
               <goal>run</goal>
